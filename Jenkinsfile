@@ -3,13 +3,14 @@
 pipeline{
 
     agent any
+    //agent { label 'Demo' }
 
     parameters{
 
         choice(name: 'action', choices: 'create\ndelete', description: 'Choose create/Destroy')
         string(name: 'ImageName', description: "name of the docker build", defaultValue: 'javapp')
         string(name: 'ImageTag', description: "tag of the docker build", defaultValue: 'v1')
-        string(name: 'DockerHubUser', description: "name of the Application", defaultValue: 'vootlasaicharan')
+        string(name: 'DockerHubUser', description: "name of the Application", defaultValue: 'loanji')
     }
 
     stages{
@@ -19,8 +20,17 @@ pipeline{
             steps{
             gitCheckout(
                 branch: "main",
-                url: "https://github.com/VootlaSaiCharan/Java_app_3.0.git"
+                url: "https://github.com/praveen1994dec/Java_app_3.0.git"
             )
+            }
+        }
+        stage('test'){
+             when { expression {  params.action == 'create' } }
+            steps{
+                 script{
+                     sh 'id -un'
+                     sh 'ls -la'
+                 }
             }
         }
          stage('Unit Test maven'){
@@ -72,14 +82,45 @@ pipeline{
                }
             }
         }
-       // stage ('Pushing Jar to Jfrog : python'){
-      //    when { expression {  params.action == 'create' } }
-        //  steps{
-          //  script{
-            //    jfrogPush()
-       //         }
-     //       }
-     //   }
+        // stage('Jfrog'){
+        //  when { expression {  params.action == 'create' } }
+        //     steps{
+        //        script{ 
+        //           sh """
+        //            curl -X PUT -u admin -p Chinni@143 -T kubernetes-configmap-reload-0.0.1-SNAPSHOT.jar http://34.207.234.27:8082/artifactory/example-repo-local/
+        //           """
+        //        }
+        //     }
+        // }
+        // stage('Push artifacts into artifactory') {
+        //     steps {
+        //       rtUpload (
+        //         serverId: 'Jfrog',
+        //         spec: '''{
+        //               "files": [
+        //                 {
+        //                   "pattern": "*.jar",
+        //                    "target": "example-repo-local/build-files/"
+        //                 }
+        //             ]
+        //         }'''
+        //       )
+        //     }
+        // }
+        // stage('Push artifacts into artifactory') {
+        //     steps {
+        //         script {
+        //         jfrog()
+        //         }
+        //     }
+        // }
+        stage('Pushing Jar to Jfrog : python') {
+            steps {
+                script {
+                jfrogPush()
+                }
+            }
+        }
         stage('Docker Image Build'){
          when { expression {  params.action == 'create' } }
             steps{
@@ -98,14 +139,6 @@ pipeline{
                }
             }
         }
-      //  stage ('Pushing Jfrog File'){
-      //    when { expression {  params.action == 'create' } }
-       //   steps{
-       //     script{
-                // sh 'curl -X PUT -u admin:password -T  /var/lib/jenkins/workspace/java-3.0/target/kubernetes-configmap-reload-0.0.1-SNAPSHOT.jar "http://18.234.253.20:8082/artifactory/example-repo-local/kubernetes-configmap-reload-0.0.1-SNAPSHOT.jar"'
-         //       }
-      //      }
-     //   }
         stage('Docker Image Push : DockerHub '){
          when { expression {  params.action == 'create' } }
             steps{
@@ -123,6 +156,6 @@ pipeline{
                    dockerImageCleanup("${params.ImageName}","${params.ImageTag}","${params.DockerHubUser}")
                }
             }
-        }
+        }      
     }
 }
