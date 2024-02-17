@@ -24,15 +24,6 @@ pipeline{
             )
             }
         }
-        stage('test'){
-             when { expression {  params.action == 'create' } }
-            steps{
-                 script{
-                     sh 'id -un'
-                     sh 'ls -la'
-                 }
-            }
-        }
          stage('Unit Test maven'){
          
          when { expression {  params.action == 'create' } }
@@ -82,16 +73,6 @@ pipeline{
                }
             }
         }
-        // stage('Jfrog'){
-        //  when { expression {  params.action == 'create' } }
-        //     steps{
-        //        script{ 
-        //           sh """
-        //            curl -X PUT -u admin -p Chinni@143 -T kubernetes-configmap-reload-0.0.1-SNAPSHOT.jar http://34.207.234.27:8082/artifactory/example-repo-local/
-        //           """
-        //        }
-        //     }
-        // }
         // stage('Push artifacts into artifactory') {
         //     steps {
         //       rtUpload (
@@ -107,14 +88,8 @@ pipeline{
         //       )
         //     }
         // }
-        // stage('Push artifacts into artifactory') {
-        //     steps {
-        //         script {
-        //         jfrog()
-        //         }
-        //     }
-        // }
         stage('Pushing Jar to Jfrog : python') {
+          when { expression {  params.action == 'create' } }
             steps {
                 script {
                 jfrogPush()
